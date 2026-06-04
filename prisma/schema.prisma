@@ -1,0 +1,269 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// MÓDULO 1: ONBOARDING Y SOPORTE
+// ==========================================
+model SolicitudRegistro {
+  id_solicitud         Int               @id @default(autoincrement())
+  empresa_razon_social String
+  empresa_ruc          String            @unique
+  empresa_direccion    String
+  empresa_telefono     String
+  empresa_correo       String
+  auditor_nombres      String
+  auditor_dni          String            @unique
+  auditor_correo       String
+  auditor_telefono     String
+  estado               String            // PENDIENTE, APROBADA, RECHAZADA
+  ip_dispositivo       String?
+  token_activacion     String?
+  fecha_exp_token      DateTime?
+  fecha_registro       DateTime          @default(now())
+  bitacoras            BitacoraSoporte[]
+}
+
+model BitacoraSoporte {
+  id_bitacora       Int               @id @default(autoincrement())
+  id_solicitud      Int
+  id_usuario_soporte Int
+  tipo_interaccion  String            // Llamada, Correo, Nota, Cambio Estado
+  comentarios       String            @db.Text
+  fecha_interaccion DateTime          @default(now())
+
+  solicitud         SolicitudRegistro @relation(fields: [id_solicitud], references: [id_solicitud])
+}
+
+// ==========================================
+// MÓDULO 2: DATOS MAESTROS Y USUARIOS
+// ==========================================
+model Empresa {
+  id_empresa    Int                  @id @default(autoincrement())
+  razon_social  String
+  ruc           String               @unique
+  direccion     String
+  telefono      String
+  correo        String
+  estado        Boolean              @default(true)
+  
+  sedes         Sede[]
+  usuarios      Usuario[]
+  invitaciones  InvitacionAuditor[]
+  auditorias    Auditoria[]
+}
+
+model Sede {
+  id_sede       Int                   @id @default(autoincrement())
+  id_empresa    Int
+  nombre        String
+  direccion     String
+
+  empresa       Empresa               @relation(fields: [id_empresa], references: [id_empresa])
+  competencias  CompetenciaAuditor[]
+  auditorias    Auditoria[]
+}
+
+model Usuario {
+  id_usuario    Int                   @id @default(autoincrement())
+  id_empresa    Int
+  nombres       String
+  dni           String                @unique
+  correo        String                @unique
+  telefono      String?
+  password_hash String
+  id_rol        Int                   // 1: Auditor Admin, 2: Auditor Regular
+  estado        String                @default("ACTIVO") // ACTIVO, INACTIVO
+
+  empresa             Empresa               @relation(fields: [id_empresa], references: [id_empresa])
+  perfil              PerfilProfesional?
+  invitaciones        InvitacionAuditor[]   @relation("UsuarioAdminInvita")
+  competencias        CompetenciaAuditor[]
+  auditorias_equipo   AuditoriaEquipo[]
+  evidencias_captura  Evidencia[]
+  acciones_correctivas AccionCorrectiva[]
+  trazabilidad        AuditoriaTrazabilidad[]
+}
+
+model PerfilProfesional {
+  id_perfil           Int     @id @default(autoincrement())
+  id_usuario          Int     @unique
+  num_colegiatura     String?
+  colegio_profesional String?
+  especialidad        String?
+  anios_experiencia   Int?
+  pais                String?
+  zona_horaria        String?
+  idioma              String?
+
+  usuario             Usuario @relation(fields: [id_usuario], references: [id_usuario])
+}
+
+model InvitacionAuditor {
+  id_invitacion    Int      @id @default(autoincrement())
+  id_empresa       Int
+  id_usuario_admin Int
+  correo_invitado  String   @unique
+  token            String
+  fecha_creacion   DateTime @default(now())
+  fecha_expiracion DateTime
+  estado           String   // PENDIENTE, ENVIADA, ACTIVO, EXPIRADA
+
+  empresa          Empresa  @relation(fields: [id_empresa], references: [id_empresa])
+  usuario_admin    Usuario  @relation("UsuarioAdminInvita", fields: [id_usuario_admin], references: [id_usuario])
+}
+
+// ==========================================
+// MÓDULO 3: CATÁLOGOS NORMATIVOS
+// ==========================================
+model Norma {
+  id_norma     Int                  @id @default(autoincrement())
+  nombre       String
+  version      String
+
+  requisitos   RequisitoNorma[]
+  competencias CompetenciaAuditor[]
+  auditorias   Auditoria[]
+}
+
+model Area {
+  id_area      Int                  @id @default(autoincrement())
+  nombre       String
+
+  requisitos   RequisitoNorma[]
+  competencias CompetenciaAuditor[]
+  auditorias   Auditoria[]
+}
+
+model RequisitoNorma {
+  id_requisito     Int                   @id @default(autoincrement())
+  id_norma         Int
+  id_area          Int
+  codigo_requisito String
+  descripcion      String                @db.Text
+
+  norma            Norma                 @relation(fields: [id_norma], references: [id_norma])
+  area             Area                  @relation(fields: [id_area], references: [id_area])
+  evaluaciones     AuditoriaEvaluacion[]
+}
+
+model CompetenciaAuditor {
+  id_usuario Int
+  id_norma   Int
+  id_area    Int
+  id_sede    Int
+
+  usuario    Usuario @relation(fields: [id_usuario], references: [id_usuario])
+  norma      Norma   @relation(fields: [id_norma], references: [id_norma])
+  area       Area    @relation(fields: [id_area], references: [id_area])
+  sede       Sede    @relation(fields: [id_sede], references: [id_sede])
+
+  @@id([id_usuario, id_norma, id_area, id_sede])
+}
+
+// ==========================================
+// MÓDULO 4: PLANIFICACIÓN Y EJECUCIÓN
+// ==========================================
+model Auditoria {
+  id_auditoria            Int                     @id @default(autoincrement())
+  id_empresa              Int
+  id_sede                 Int
+  id_norma                Int
+  id_area                 Int
+  fecha_programada        DateTime                @db.Date
+  hora_inicio             DateTime                @db.Time
+  duracion_estimada       DateTime                @db.Time
+  alcance                 String?                 @db.Text
+  estado                  String                  // PENDIENTE, EN_PROCESO, PAUSADA, FINALIZADA, REABIERTA, CANCELADA
+  firma_auditor_principal String?                 @db.VarChar(255)
+  comentario_final        String?                 @db.Text
+
+  empresa                 Empresa                 @relation(fields: [id_empresa], references: [id_empresa])
+  sede                    Sede                    @relation(fields: [id_sede], references: [id_sede])
+  norma                   Norma                   @relation(fields: [id_norma], references: [id_norma])
+  area                    Area                    @relation(fields: [id_area], references: [id_area])
+  equipo                  AuditoriaEquipo[]
+  evaluaciones            AuditoriaEvaluacion[]
+  trazabilidad            AuditoriaTrazabilidad[]
+}
+
+model AuditoriaEquipo {
+  id_auditoria Int
+  id_usuario   Int
+  rol          String      // Lider, Apoyo
+
+  auditoria    Auditoria   @relation(fields: [id_auditoria], references: [id_auditoria])
+  usuario      Usuario     @relation(fields: [id_usuario], references: [id_usuario])
+
+  @@id([id_auditoria, id_usuario])
+}
+
+model AuditoriaEvaluacion {
+  id_evaluacion    Int         @id @default(autoincrement())
+  id_auditoria     Int
+  id_requisito     Int
+  clasificacion    String      // C, NC, OBS, OM, NA
+  fecha_evaluacion DateTime    @db.Timestamp
+
+  auditoria        Auditoria   @relation(fields: [id_auditoria], references: [id_auditoria])
+  requisito        RequisitoNorma @relation(fields: [id_requisito], references: [id_requisito])
+  hallazgo         Hallazgo?
+  evidencias       Evidencia[]
+}
+
+model Hallazgo {
+  id_hallazgo   Int                 @id @default(autoincrement())
+  id_evaluacion Int                 @unique
+  criticidad    String              // Critica, Mayor, Menor
+  descripcion   String              @db.Text
+
+  evaluacion    AuditoriaEvaluacion @relation(fields: [id_evaluacion], references: [id_evaluacion])
+  acciones      AccionCorrectiva[]
+}
+
+model Evidencia {
+  id_evidencia       Int                 @id @default(autoincrement())
+  id_evaluacion      Int
+  id_usuario_captura Int
+  tipo               String              // Fisica, Escrita, Verbal
+  formato            String              // Foto, Documento, Audio, Video
+  url_archivo        String              @db.VarChar(255)
+  fecha_captura      DateTime            @db.Timestamp
+  latitud            Decimal?            @db.Decimal(10, 8)
+  longitud           Decimal?            @db.Decimal(11, 8)
+
+  evaluacion         AuditoriaEvaluacion @relation(fields: [id_evaluacion], references: [id_evaluacion])
+  usuario            Usuario             @relation(fields: [id_usuario_captura], references: [id_usuario])
+}
+
+// ==========================================
+// MÓDULO 5: SEGUIMIENTO Y TRAZABILIDAD
+// ==========================================
+model AccionCorrectiva {
+  id_accion              Int       @id @default(autoincrement())
+  id_hallazgo            Int
+  id_usuario_responsable Int
+  descripcion_plan       String    @db.Text
+  plazo_resolucion       DateTime  @db.Date
+  estado                 String    // ABIERTA, EN_PROCESO, CERRADA
+
+  hallazgo               Hallazgo  @relation(fields: [id_hallazgo], references: [id_hallazgo])
+  responsable            Usuario   @relation(fields: [id_usuario_responsable], references: [id_usuario])
+}
+
+model AuditoriaTrazabilidad {
+  id_trazabilidad   Int       @id @default(autoincrement())
+  id_auditoria      Int
+  id_usuario        Int
+  accion            String    // Creacion, Inicio, Pausa, Cierre, Reapertura
+  fecha_accion      DateTime  @default(now()) @db.Timestamp
+  motivo_reapertura String?   @db.Text
+
+  auditoria         Auditoria @relation(fields: [id_auditoria], references: [id_auditoria])
+  usuario           Usuario   @relation(fields: [id_usuario], references: [id_usuario])
+}
