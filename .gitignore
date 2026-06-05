@@ -1,5 +1,33 @@
-node_modules
-# Keep environment variables out of version control
-.env
+# Dependencias
+node_modules/
 
+# Entorno y Secretos
+.env
+.env.*
+!.env.example # Permite subir un archivo de ejemplo sin contraseñas
+
+# Archivos de compilación (TypeScript)
+dist/
+build/
+
+# Archivos subidos por usuarios (Multer)
+uploads/*
+!uploads/.gitkeep # Sube la carpeta vacía pero ignora su contenido
+
+# Prisma
 /src/generated/prisma
+*.db
+*.db-journal
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+logs/
+
+# Sistema Operativo y Editores de código
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
