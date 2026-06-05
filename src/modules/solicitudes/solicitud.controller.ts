@@ -1,3 +1,4 @@
+// src/modules/solicitudes/solicitud.controller.ts
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";

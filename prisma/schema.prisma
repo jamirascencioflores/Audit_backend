@@ -70,24 +70,24 @@ model Sede {
 }
 
 model Usuario {
-  id_usuario    Int                   @id @default(autoincrement())
-  id_empresa    Int
-  nombres       String
-  dni           String                @unique
-  correo        String                @unique
-  telefono      String?
-  password_hash String
-  id_rol        Int                   // 1: Auditor Admin, 2: Auditor Regular
-  estado        String                @default("ACTIVO") // ACTIVO, INACTIVO
+  id_usuario           Int                     @id @default(autoincrement())
+  id_empresa           Int?
+  nombres              String
+  dni                  String                  @unique
+  correo               String                  @unique
+  telefono             String?
+  password_hash        String
+  id_rol               Int                     // 1: Auditor Admin, 2: Auditor Regular, 3: Soporte
+  estado               String                  @default("ACTIVO") // ACTIVO, INACTIVO
 
-  empresa             Empresa               @relation(fields: [id_empresa], references: [id_empresa])
-  perfil              PerfilProfesional?
-  invitaciones        InvitacionAuditor[]   @relation("UsuarioAdminInvita")
-  competencias        CompetenciaAuditor[]
-  auditorias_equipo   AuditoriaEquipo[]
-  evidencias_captura  Evidencia[]
+  empresa              Empresa?                @relation(fields: [id_empresa], references: [id_empresa])
+  perfil               PerfilProfesional?
+  invitaciones         InvitacionAuditor[]     @relation("UsuarioAdminInvita")
+  competencias         CompetenciaAuditor[]
+  auditorias_equipo    AuditoriaEquipo[]
+  evidencias_captura   Evidencia[]
   acciones_correctivas AccionCorrectiva[]
-  trazabilidad        AuditoriaTrazabilidad[]
+  trazabilidad         AuditoriaTrazabilidad[]
 }
 
 model PerfilProfesional {

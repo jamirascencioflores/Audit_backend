@@ -6,6 +6,7 @@ import authRoutes from "./modules/usuarios/auth.routes"; // <-- Importación
 import auditoriaRoutes from "./modules/auditorias/auditoria.routes";
 import normativaRoutes from "./modules/normativas/normativa.routes";
 import solicitudRoutes from './modules/solicitudes/solicitud.routes';
+import invitacionRoutes from './modules/invitaciones/invitacion.routes';
 
 dotenv.config();
 
@@ -30,6 +31,8 @@ app.use("/api/auditorias", auditoriaRoutes);
 app.use("/api/normativas", normativaRoutes);
 
 app.use('/api/solicitudes', solicitudRoutes);
+
+app.use('/api/invitaciones', invitacionRoutes);
 
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en el puerto ${PORT}`);
