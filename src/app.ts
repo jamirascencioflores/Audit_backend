@@ -11,6 +11,7 @@ import sedeRoutes from './modules/sedes/sede.routes';
 import perfilRoutes from './modules/perfiles/perfil.routes';
 import accionRoutes from './modules/seguimiento/accion.routes';
 import trazabilidadRoutes from './modules/seguimiento/trazabilidad.routes';
+import reporteRoutes from './modules/reportes/reporte.routes';
 
 dotenv.config();
 
@@ -45,6 +46,8 @@ app.use('/api/perfiles', perfilRoutes);
 app.use('/api/seguimiento/acciones', accionRoutes);
 
 app.use('/api/seguimiento/trazabilidad', trazabilidadRoutes);
+
+app.use('/api/reportes', reporteRoutes);
 
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en el puerto ${PORT}`);
