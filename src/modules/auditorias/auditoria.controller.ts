@@ -176,3 +176,67 @@ export const cambiarEstado = async (
       .json({ error: "Error al cambiar el estado de la auditoría" });
   }
 };
+
+// Temporal para subir evidencias a local
+export const subirEvidencia = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    console.log("--- DEBUG EVIDENCIA ---");
+    console.log("Content-Type:", req.headers["content-type"]);
+    console.log("Body devuelto por Multer:", req.body);
+    console.log("File devuelto por Multer:", req.file);
+
+    // 1. Validar primero si llegó el archivo (antes de leer el body)
+    if (!req.file) {
+      res
+        .status(400)
+        .json({
+          error: 'No se recibió el archivo. Verifica el campo "archivo".',
+        });
+      return;
+    }
+
+    // 2. Extraer datos de forma segura
+    const body = req.body || {};
+    const { id_evaluacion, tipo, latitud, longitud } = body;
+
+    if (!id_evaluacion) {
+      res.status(400).json({ error: "Falta el campo id_evaluacion" });
+      return;
+    }
+
+    const usuario = (req as any).usuario;
+    const extension = req.file.mimetype.split("/")[0];
+    const formato =
+      extension === "image"
+        ? "Foto"
+        : extension === "video"
+          ? "Video"
+          : "Documento";
+
+    const nuevaEvidencia = await prisma.evidencia.create({
+      data: {
+        id_evaluacion: Number(id_evaluacion),
+        id_usuario_captura: usuario.id_usuario,
+        tipo: tipo || "Fisica",
+        formato,
+        url_archivo: `/uploads/${req.file.filename}`,
+        fecha_captura: new Date(),
+        latitud: latitud ? Number(latitud) : null,
+        longitud: longitud ? Number(longitud) : null,
+      },
+    });
+
+    res
+      .status(201)
+      .json({
+        mensaje: "Evidencia subida con éxito",
+        evidencia: nuevaEvidencia,
+      });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error interno al guardar en BD" });
+  }
+};

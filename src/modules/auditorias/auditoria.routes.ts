@@ -6,7 +6,9 @@ import {
   obtenerChecklist,
   evaluarRequisito,
   cambiarEstado,
+  subirEvidencia,
 } from "./auditoria.controller";
+import { uploadFile } from "../../middlewares/upload.middleware";
 import { verificarToken } from "../../middlewares/auth.middleware";
 
 const router = Router();
@@ -25,5 +27,13 @@ router.post("/:id/evaluacion", verificarToken, evaluarRequisito);
 
 // Endpoint: PATCH /api/auditorias/:id/estado (Protegido)
 router.patch("/:id/estado", verificarToken, cambiarEstado);
+
+// Endpoint: POST /api/auditorias/evidencias (Protegido)
+router.post(
+  "/evidencias",
+  verificarToken,
+  uploadFile.single("archivo"),
+  subirEvidencia,
+);
 
 export default router;
