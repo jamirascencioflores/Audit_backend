@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
+import { enviarCorreoInvitacion } from "../../config/mailer";
 
 const prisma = new PrismaClient();
 
@@ -68,7 +69,8 @@ export const crearInvitacion = async (
       },
     });
 
-    // TODO: Aquí iría la lógica para enviar el correo (Nodemailer)
+    // Enviar correo de invitación
+    await enviarCorreoInvitacion(nuevaInvitacion.correo_invitado, nuevaInvitacion.token);
 
     res.status(201).json({
       mensaje: "Invitación generada correctamente",
