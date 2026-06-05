@@ -7,6 +7,10 @@ import auditoriaRoutes from "./modules/auditorias/auditoria.routes";
 import normativaRoutes from "./modules/normativas/normativa.routes";
 import solicitudRoutes from './modules/solicitudes/solicitud.routes';
 import invitacionRoutes from './modules/invitaciones/invitacion.routes';
+import sedeRoutes from './modules/sedes/sede.routes';
+import perfilRoutes from './modules/perfiles/perfil.routes';
+import accionRoutes from './modules/seguimiento/accion.routes';
+import trazabilidadRoutes from './modules/seguimiento/trazabilidad.routes';
 
 dotenv.config();
 
@@ -33,6 +37,14 @@ app.use("/api/normativas", normativaRoutes);
 app.use('/api/solicitudes', solicitudRoutes);
 
 app.use('/api/invitaciones', invitacionRoutes);
+
+app.use('/api/sedes', sedeRoutes);
+
+app.use('/api/perfiles', perfilRoutes);
+
+app.use('/api/seguimiento/acciones', accionRoutes);
+
+app.use('/api/seguimiento/trazabilidad', trazabilidadRoutes);
 
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en el puerto ${PORT}`);
