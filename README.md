@@ -94,3 +94,30 @@ A continuación, los endpoints clave.
 ### 5. Reportes y Dashboard
 * `GET /api/reportes/dashboard` - Devuelve las métricas agrupadas y conteos por estado de las auditorías y acciones correctivas para renderizar gráficos.
 
+---
+
+## 📋 Información de Acceso y Configuración para el Proyecto (Nos Planét)
+Hola equipo, les comparto los datos necesarios para levantar el entorno de desarrollo y realizar las primeras pruebas de conexión con el backend:
+
+### 1. Script de Datos Iniciales (Seed) 
+He configurado un script de carga inicial que poblará la base de datos con una estructura real (Empresa, Sedes, Normas, Áreas y Usuarios). Para ejecutarlo, una vez tengan configurado su .env, corran:
+   ```bash
+   npx prisma db seed
+   ```
+
+### 2. Cuentas de Acceso (Credenciales de Prueba)
+El script generará automáticamente los siguientes usuarios para que puedan probar los diferentes roles y niveles de acceso en el sistema:
+* **Auditor Administrador (Rol 1):**
+   * **Correo:** `auditor@nosplanet.com`
+   * **Contraseña:** `Auditor2026!`
+   * Uso: Ideal para probar las rutas de invitación, creación de sedes y gestión de perfiles.
+
+### 3. Notas para el Frontend
+* **Empresa de prueba creada:** "Nos Planét Agro SAC" (RUC: `20123456789`).
+* **Normas cargadas:** ISO 22000 y GLOBALG.A.P.
+* **Requisitos:** Ya tienen cargados requisitos iniciales para el "Campo" y "Planta" que pueden listar para sus formularios.
+
+### 📝 Recordatorio
+Si llegan a recibir un error al hacer login o al intentar consultar datos, recuerden verificar que el token JWT que reciben al loguearse lo están enviando correctamente en el Header de cada petición bajo la clave `Authorization: Bearer <TOKEN>`.
+
+Cualquier duda o dato que necesiten que agregue al script de seed para sus pruebas de interfaz (UI), avísenme. 
