@@ -63,6 +63,24 @@ async function main() {
   });
   console.log(`✅ Usuario creado: ${auditor.correo}`);
 
+  // 3.5 USUARIO DE SOPORTE (NOS PLANÉT)
+  const soportePasswordHash = await bcrypt.hash("Soporte2026!", 10);
+
+  const soporte = await prisma.usuario.upsert({
+    where: { correo: "soporte@nosplanet.com" },
+    update: {},
+    create: {
+      nombres: "Administrador Nos Planét",
+      dni: "00000000",
+      correo: "soporte@nosplanet.com",
+      telefono: "999999999",
+      password_hash: soportePasswordHash,
+      id_rol: 3, // 3: Soporte (Sin id_empresa)
+      estado: "ACTIVO",
+    },
+  });
+  console.log(`✅ Usuario Soporte creado: ${soporte.correo}`);
+
   // 4. CATÁLOGO: NORMAS
   const normaISO22000 = await prisma.norma.create({
     data: { nombre: "ISO 22000 - Inocuidad Alimentaria", version: "2018" },
